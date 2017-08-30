@@ -1,0 +1,10 @@
+#compute hessian matrix of a two dimension function 
+#f : the two dimension function 
+#x : the vector where to compute the hessian 
+#h : the tolerance
+hessian = function(f,x,h=1e-4){
+  f11=( f(c(x[1]+h,x[2]))+f(c(x[1]-h,x[2]))-2*f(x) )/h^2
+  f22=( f(c(x[1],x[2]+h))+f(c(x[1],x[2]-h))-2*f(x) )/h^2
+  f12=( f(c(x[1]+h/2,x[2]+h/2))-f(c(x[1]-h/2,x[2]+h/2))-f(c(x[1]+h/2,x[2]-h/2))+f(c(x[1]-h/2,x[2]+h/2)) )/h^2
+  return(matrix(c(f11,f12,f12,f22),nrow=2))
+  }
