@@ -58,7 +58,7 @@ Oep=function(f,nmin,D,xmin,xmax,tol,c1,K,N){
       }
       
       #calcul de la nouvelle vitesse 
-      for(j in 1:D){
+      for(j in 1:D){ 
         V[i,j]=c1*V[i,j]+alea(0,cmax)*(best_p[i,j]-P[i,j])+alea(0,cmax)*(best_p[g,j]-P[i,j])
       }
       #déplacement 
