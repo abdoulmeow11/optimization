@@ -1,0 +1,111 @@
+alea=function(a,b,n=1){
+  return(runif(n,a,b))
+}
+Oep=function(f,nmin,D,xmin,xmax,tol,c1,K,N){ 
+  B=NULL
+  cmax=(2/0.97725)*c1
+  P=matrix(nrow=N,ncol=D)
+  V=matrix(nrow=N,ncol=D)
+  eval_f=rep(0,N)
+  best_p=matrix(nrow=N,ncol=D)
+  for(i in 1:N){
+    P[i,]=alea(xmin,xmax,D)
+    V[i,]=alea((xmin-xmax)/2,(xmax-xmin)/2,D)
+  }
+  B=P
+  #évaluations initiales 
+  for(i in 1:N){
+    eval_f[i]=f(P[i,]) # ne pas oublier dans la définition de la fonction d'entrer un vecteur comme variable 
+    best_p[i,]=P[i,]
+  }
+  #meilleur position = position initiale
+  best=best_p[1,] #mémorisation du meilleure résultat atteint jusqu'ici
+  for( i in 1:N ){
+    if(f(best_p[i,])<f(best)){
+      best=best_p[i,]
+    }
+  }
+  #########################itérations pour chaque particule 
+  min_f=NULL
+  k=1;kmax=40000
+  besta=NULL
+  test=TRUE
+  while((test==TRUE) & (k<kmax)){
+    for(i in 1:N){
+      #meilleure informatrice dans le i-groupe circulaire de taille K
+      g=i
+      min_f=f(best_p[i,])
+      signe=1;z=1;
+      #autre informatrice 
+      rang=i+signe*z
+      if(rang>N){rang=rang-N}
+      if(rang<1){rang=rang+N}
+      if(f(best_p[rang,])<min_f){
+        g=rang;
+        min_f=f(best_p[rang,])
+      }
+      while(z<K){
+        signe=-signe
+        z=z+1
+        rang=i+signe*z
+        if(rang>N){rang=rang-N}
+        if(rang<1){rang=rang+N}
+        if(f(best_p[rang,])<min_f){
+          g=rang;
+          min_f=f(best_p[rang,])
+        }
+        
+      }
+      
+      #calcul de la nouvelle vitesse 
+      for(j in 1:D){
+        V[i,j]=c1*V[i,j]+alea(0,cmax)*(best_p[i,j]-P[i,j])+alea(0,cmax)*(best_p[g,j]-P[i,j])
+      }
+      #déplacement 
+      for(j in 1:D){
+        P[i,j]=P[i,j]+V[i,j]
+      }
+      #confinement d'intervalle, on initialise à 0 quand on sort de l'espace de recherche ou on 
+      #choisi V[i,j]=-0.5*V[i,j] (appliquer le changement lors de tests )  
+      for(j in 1:D){
+        
+        if(P[i,j]<xmin){
+          P[i,j]=xmin 
+          V[i,j]=0
+        }
+        if(P[i,j]>xmax){
+          P[i,j]=xmax
+          V[i,j]=0
+        }
+        
+      }
+      
+      #évaluation de la nouvelle position 
+      eval_f[i]=f(P[i,])
+      
+      #mise à jour de la meilleure position
+      if(eval_f[i]<f(best_p[i,])){
+        best_p[i,]=P[i,]
+      }
+      
+      #mémorisation du meilleur résultat atteint jusqu'ici
+      if(f(best_p[i,])<f(best)){
+        best=best_p[i,]
+      }
+      
+      
+    }
+    B=cbind(B,P)
+    
+    besta=rbind(besta,best)
+    if(k<nmin){
+      test=TRUE
+    }else{test=(sum(abs(besta[k,]-besta[k-1,]))>tol)}
+    k=k+1 
+    
+  }
+  
+  #résultat moyen
+  return(list((k-1),f(best),best,besta,B))
+  
+}
